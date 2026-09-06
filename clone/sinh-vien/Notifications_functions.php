@@ -13,14 +13,14 @@ function getNotificationStatus($title, $description)
     return "Thông báo ngắn";
 }
 
-function getPublishedNotifications(PDO $db, ?int $limit = null): array
+function getPublishedNotifications(PDO $db, ?int $limit = null, string $targetRole = 'SINH_VIEN'): array
 {
     $sql = "
         SELECT id, tieu_de AS title, noi_dung AS description,
-               file_dinh_kem, ngay_dang
+               file_dinh_kem, ngay_dang, doi_tuong_nhan
         FROM thong_bao
         WHERE trang_thai = :trang_thai
-          AND doi_tuong_nhan IN (:tat_ca, :sinh_vien)
+          AND doi_tuong_nhan IN ('TAT_CA', :target_role)
         ORDER BY ngay_dang DESC, id DESC
     ";
     if ($limit !== null) {
@@ -30,11 +30,10 @@ function getPublishedNotifications(PDO $db, ?int $limit = null): array
     $stmt = $db->prepare($sql);
     $stmt->execute([
         ':trang_thai' => 'DA_GUI',
-        ':tat_ca' => 'TAT_CA',
-        ':sinh_vien' => 'SINH_VIEN',
+        ':target_role' => $targetRole,
     ]);
 
-    return $stmt->fetchAll();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function getNotificationImage(array $notification): string

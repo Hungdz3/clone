@@ -15,7 +15,7 @@
     .dashboard-grid { margin-top: 20px; }
     .card-header-row { display: flex; justify-content: space-between; align-items: center; }
     .site-header { position: sticky; top: 0; z-index: 1000; }
-    .navbar { position: sticky; top: 68px; z-index: 999; }
+    .navbar { position: sticky; top: 64px; z-index: 999; }
     
     /* Stats & Badge classes for admin dashboard */
     .dashboard-stats-row {

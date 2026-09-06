@@ -9,6 +9,9 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
   display: flex; justify-content: space-between; align-items: center;
   background: #ffffff; color: #1e293b; padding: 12px 28px;
   border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 .header-left { display: flex; align-items: center; gap: 12px; }
 .logo-placeholder { font-size: 32px; background: rgba(30, 58, 138, 0.08); padding: 5px; border-radius: 8px; }
@@ -24,7 +27,12 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:
 }
 
 /* Navbar */
-.navbar { background: #1E3A8A; display: flex; gap: 4px; padding: 0 20px; }
+.navbar {
+  background: #1E3A8A; display: flex; gap: 4px; padding: 0 20px;
+  position: sticky;
+  top: 64px;
+  z-index: 999;
+}
 .navbar a {
   padding: 14px 20px; color: #e2e8f0; text-decoration: none;
   font-size: 14px; font-weight: 500;

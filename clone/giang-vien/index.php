@@ -26,6 +26,22 @@ try {
     // Fallback if query error
 }
 
+// Lấy 3 thông báo mới nhất cho Giảng viên
+$recentNotices = [];
+try {
+    $stmt_tb = $db->query("
+        SELECT id, tieu_de, noi_dung, doi_tuong_nhan, ngay_dang
+        FROM thong_bao
+        WHERE trang_thai = 'DA_GUI'
+          AND doi_tuong_nhan IN ('TAT_CA', 'GIANG_VIEN')
+        ORDER BY ngay_dang DESC, id DESC
+        LIMIT 3
+    ");
+    $recentNotices = $stmt_tb->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // Silent catch
+}
+
 $displayTen = $gvInfo['ho_ten'] ?? $hoTenGV;
 $displayMa = $gvInfo['ma_gv'] ?? 'GV20180045';
 $displayKhoa = $gvInfo['ten_khoa'] ?? 'Công nghệ thông tin';
@@ -122,46 +138,38 @@ $displaySdt = $gvInfo['so_dien_thoai'] ?? '0983278902';
         </div>
     </div>
 
-    <!-- Khối Dưới: THÔNG BÁO CHUNG -->
+    <!-- Khối Dưới: THÔNG BÁO MỚI CẬP NHẬT -->
     <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-        <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 16px;">
-            <span style="font-size: 18px; color: #1E3A8A;">🔔</span>
-            <h3 style="margin: 0; font-size: 14px; font-weight: 800; color: #1E3A8A; text-transform: uppercase; letter-spacing: 0.3px;">THÔNG BÁO CHUNG</h3>
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 18px; color: #1E3A8A;">🔔</span>
+                <h3 style="margin: 0; font-size: 14px; font-weight: 800; color: #1E3A8A; text-transform: uppercase; letter-spacing: 0.3px;">THÔNG BÁO MỚI CẬP NHẬT</h3>
+            </div>
+            <a href="thong-bao.php" style="font-size: 12px; color: #1E3A8A; font-weight: 700; text-decoration: none;">Xem tất cả thông báo ➔</a>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 12px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; transition: all 0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#f8fafc'">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 18px;">📄</span>
-                    <span style="font-size: 13.5px; font-weight: 600; color: #1e293b;">Thông báo lịch giảng dạy học kỳ mới HK1 - 2026</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 12px; color: #94a3b8;">18/05/2026</span>
-                    <span style="color: #94a3b8; font-weight: 700;">›</span>
-                </div>
-            </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; transition: all 0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#f8fafc'">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 18px;">📄</span>
-                    <span style="font-size: 13.5px; font-weight: 600; color: #1e293b;">Thông báo cập nhật thông tin giảng viên hồ sơ cá nhân</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 12px; color: #94a3b8;">10/05/2026</span>
-                    <span style="color: #94a3b8; font-weight: 700;">›</span>
-                </div>
-            </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; transition: all 0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#f8fafc'">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 18px;">📄</span>
-                    <span style="font-size: 13.5px; font-weight: 600; color: #1e293b;">Thông báo kế hoạch đào tạo và hướng dẫn sinh viên đăng ký học phần</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 12px; color: #94a3b8;">09/05/2026</span>
-                    <span style="color: #94a3b8; font-weight: 700;">›</span>
-                </div>
-            </div>
+            <?php if (empty($recentNotices)): ?>
+                <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 13px;">Hiện chưa có thông báo mới nào.</div>
+            <?php else: ?>
+                <?php foreach ($recentNotices as $tb): ?>
+                    <a href="thong-bao.php" style="text-decoration: none; color: inherit; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; transition: all 0.2s;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#f1f5f9';">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 18px;">📄</span>
+                            <div>
+                                <span style="font-size: 13.5px; font-weight: 600; color: #1e293b; display: block;"><?= e($tb['tieu_de']) ?></span>
+                                <span style="font-size: 11px; color: #1e40af; font-weight: 700; background: #dbeafe; padding: 1px 6px; border-radius: 4px; display: inline-block; margin-top: 2px;">
+                                    <?= $tb['doi_tuong_nhan'] === 'GIANG_VIEN' ? 'Giảng viên' : 'Toàn trường' ?>
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; white-space: nowrap;">
+                            <span style="font-size: 12px; color: #94a3b8;">📅 <?= !empty($tb['ngay_dang']) ? date('d/m/Y', strtotime($tb['ngay_dang'])) : date('d/m/Y') ?></span>
+                            <span style="color: #94a3b8; font-weight: 700;">›</span>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 

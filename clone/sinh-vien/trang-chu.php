@@ -93,8 +93,10 @@ try {
     // Silent catch
 }
 
+$notifications = [];
+$notification_error = '';
 try {
-    $notifications = getPublishedNotifications($db, 3);
+    $notifications = getPublishedNotifications($db, 3, 'SINH_VIEN');
 } catch (Exception $e) {
     $notification_error = 'Không thể tải danh sách thông báo. Vui lòng thử lại sau.';
 }
@@ -194,39 +196,49 @@ require_once 'includes/header.php';
   </div>
 </section>
 
-<section id="notifications" class="home-notifications">
-  <p class="home-notifications-kicker">TIN MỚI</p>
-  <h2>Thông báo từ nhà trường</h2>
+<!-- Section Thông Báo Mới Cập Nhật trên Trang Chủ -->
+<section id="notifications" class="home-notifications" style="padding: 0 28px; max-width: 1400px; margin: 0 auto 32px auto;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+    <div>
+      <p style="color: #0284CF; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">TIN MỚI CẬP NHẬT</p>
+      <h2 style="font-size: 22px; color: #1a3a6b; margin: 0; font-weight: 700;">Thông báo từ nhà trường</h2>
+    </div>
+    <a href="thong-bao.php" style="color: #1e4d8c; font-weight: 700; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">Xem tất cả thông báo ➔</a>
+  </div>
 
   <?php if ($notification_error !== ''): ?>
     <div class="no-data-card"><?= htmlspecialchars($notification_error, ENT_QUOTES, 'UTF-8') ?></div>
   <?php elseif (empty($notifications)): ?>
-    <div class="no-data-card">Không có thông báo nào được tìm thấy.</div>
+    <div class="no-data-card">Hiện chưa có thông báo mới nào.</div>
   <?php else: ?>
-    <div class="home-notifications-grid">
+    <div class="home-notifications-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
       <?php foreach ($notifications as $n):
         $status = getNotificationStatus($n['title'], $n['description']);
         $image_url = getNotificationImage($n);
       ?>
-        <article class="home-notification-card">
-          <div class="home-notification-image">
+        <a href="thong-bao.php?id=<?= $n['id'] ?>" class="home-notification-card" style="text-decoration: none; color: inherit; background: white; border-radius: 12px; border: 1px solid #eef2f6; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.08)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 10px rgba(0,0,0,0.04)';">
+          <div class="home-notification-image" style="height: 140px; overflow: hidden; background: #f1f5f9; display: flex; align-items: center; justify-content: center;">
             <img
-                 src="<?= htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8') ?>"
-                 alt="<?= htmlspecialchars($n['title'], ENT_QUOTES, 'UTF-8') ?>">
+                 src="../<?= htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8') ?>"
+                 onerror="this.src='../assets/illustration.png'"
+                 alt="<?= htmlspecialchars($n['title'], ENT_QUOTES, 'UTF-8') ?>"
+                 style="width: 100%; height: 100%; object-fit: cover;">
           </div>
-          <div class="home-notification-content">
-            <h3><?= htmlspecialchars($n['title'], ENT_QUOTES, 'UTF-8') ?></h3>
-            <p><?= htmlspecialchars($n['description'], ENT_QUOTES, 'UTF-8') ?></p>
-            <div class="home-notification-tags">
-              <span><?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?></span>
+          <div class="home-notification-content" style="padding: 18px; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+            <div>
+              <h3 style="font-size: 15px; color: #0f172a; margin-bottom: 8px; font-weight: 700; line-height: 1.4;"><?= htmlspecialchars($n['title'], ENT_QUOTES, 'UTF-8') ?></h3>
+              <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 14px;"><?= htmlspecialchars(mb_substr(strip_tags($n['description']), 0, 110, 'UTF-8')) ?>...</p>
+            </div>
+            <div class="home-notification-tags" style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; border-top: 1px dashed #f1f5f9; padding-top: 10px; margin-top: 10px;">
+              <span style="background: #dbeafe; color: #1e40af; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;"><?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?></span>
               <?php if (!empty($n['ngay_dang'])): ?>
-                <time datetime="<?= htmlspecialchars($n['ngay_dang'], ENT_QUOTES, 'UTF-8') ?>">
-                  <?= date('d/m/Y', strtotime($n['ngay_dang'])) ?>
+                <time datetime="<?= htmlspecialchars($n['ngay_dang'], ENT_QUOTES, 'UTF-8') ?>" style="font-weight: 500;">
+                  📅 <?= date('d/m/Y', strtotime($n['ngay_dang'])) ?>
                 </time>
               <?php endif; ?>
             </div>
           </div>
-        </article>
+        </a>
       <?php endforeach; ?>
     </div>
   <?php endif; ?>

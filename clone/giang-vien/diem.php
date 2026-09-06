@@ -498,8 +498,41 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         document.body.removeChild(link);
     }
 
-    // Arrow keys & Enter excel navigation
+    // Keyboard Navigation for Score Inputs (Excel-like & Modal Shortcuts)
     document.addEventListener('keydown', function(e) {
+        // Alt + N mở Modal nhập điểm
+        if (e.altKey && (e.key === 'n' || e.key === 'N')) {
+            e.preventDefault();
+            openAddModal();
+            const mssvInput = document.getElementById('m-mssv');
+            if (mssvInput) mssvInput.focus();
+            return;
+        }
+
+        // Xử lý khi Modal Nhập điểm học viên mới đang mở
+        const addModal = document.getElementById('modal-add-student');
+        if (addModal && addModal.style.display !== 'none') {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeAddModal();
+                return;
+            }
+
+            if (e.key === 'Enter') {
+                const active = document.activeElement;
+                if (active && active.tagName === 'BUTTON') return;
+                
+                const formInputs = Array.from(document.querySelectorAll('#form-student-grade input'));
+                const currIdx = formInputs.indexOf(active);
+                if (currIdx !== -1 && currIdx < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[currIdx + 1].focus();
+                    if (formInputs[currIdx + 1].select) formInputs[currIdx + 1].select();
+                }
+            }
+        }
+
+        // Điều hướng dạng Excel bằng phím mũi tên trong Bảng Điểm
         if (!e.target.classList.contains('score-input')) return;
         const input = e.target;
         const row = parseInt(input.dataset.row);
@@ -507,7 +540,8 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         let targetRow = row, targetCol = col;
 
         if (e.key === 'ArrowUp') { targetRow = row - 1; e.preventDefault(); }
-        else if (e.key === 'ArrowDown' || e.key === 'Enter') { targetRow = row + 1; e.preventDefault(); }
+        else if (e.key === 'ArrowDown') { targetRow = row + 1; e.preventDefault(); }
+        else if (e.key === 'Enter' && (!addModal || addModal.style.display === 'none')) { targetRow = row + 1; e.preventDefault(); }
         else if (e.key === 'ArrowRight' && input.selectionEnd === input.value.length) { targetCol = col + 1; }
         else if (e.key === 'ArrowLeft' && input.selectionStart === 0) { targetCol = col - 1; }
 
@@ -522,5 +556,6 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         loadDiemData();
     });
 </script>
+
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

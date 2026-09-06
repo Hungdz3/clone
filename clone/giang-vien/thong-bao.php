@@ -14,11 +14,11 @@ $thongBaoList = [];
 
 try {
     $stmt = $db->query("
-        SELECT id, tieu_de, noi_dung, created_at, doi_tuong_nhan, file_dinh_kem
+        SELECT id, tieu_de, noi_dung, ngay_dang, doi_tuong_nhan, file_dinh_kem
         FROM thong_bao
         WHERE doi_tuong_nhan IN ('TAT_CA', 'GIANG_VIEN') AND trang_thai = 'DA_GUI'
-        ORDER BY created_at DESC
-        LIMIT 20
+        ORDER BY ngay_dang DESC, id DESC
+        LIMIT 50
     ");
     $thongBaoList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
@@ -59,13 +59,13 @@ try {
                             <span style="background: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;">
                                 <?= $tb['doi_tuong_nhan'] === 'GIANG_VIEN' ? 'GIẢNG VIÊN' : 'TOÀN TRƯỜNG' ?>
                             </span>
-                            <span style="font-size: 12px; color: #64748b; font-weight: 500;">📅 <?= date('d/m/Y H:i', strtotime($tb['created_at'])) ?></span>
+                            <span style="font-size: 12px; color: #64748b; font-weight: 500;">📅 <?= !empty($tb['ngay_dang']) ? date('d/m/Y H:i', strtotime($tb['ngay_dang'])) : date('d/m/Y') ?></span>
                         </div>
                         <h4 style="margin: 0 0 6px 0; font-size: 15px; color: #0f172a; font-weight: 700;"><?= e($tb['tieu_de']) ?></h4>
                         <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5;"><?= nl2br(e($tb['noi_dung'])) ?></p>
                         <?php if (!empty($tb['file_dinh_kem'])): ?>
                             <div style="margin-top: 10px;">
-                                <a href="../uploads/<?= e($tb['file_dinh_kem']) ?>" download style="font-size: 12px; color: #2563eb; font-weight: 600; text-decoration: none;">📎 Đính kèm: <?= e($tb['file_dinh_kem']) ?></a>
+                                <a href="../<?= e($tb['file_dinh_kem']) ?>" download target="_blank" style="font-size: 12px; color: #2563eb; font-weight: 600; text-decoration: none;">📎 Đính kèm: <?= e(basename($tb['file_dinh_kem'])) ?></a>
                             </div>
                         <?php endif; ?>
                     </div>
