@@ -11,6 +11,27 @@
   <link rel="stylesheet" href="../assets/css/style.css">
   <!-- Bổ sung CSS bổ trợ cho trang Admin -->
   <style>
+    .navbar + .banner-welcome,
+.banner-welcome {
+      background: #1E3A8A;
+      margin: 40px 28px 20px 28px !important;
+      padding: 28px 32px;
+      border-radius: 5px;
+      box-shadow: 0 4px 12px rgba(30,58,138,0.15);
+    }
+    .banner-welcome-content h2 {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+    }
+    .banner-welcome-content p {
+      color: #dbe3f7;
+      font-size: 13.5px;
+      margin: 0;
+      max-width: 640px;
+      line-height: 1.5;
+    }
     /* Admin specific helper classes */
     .dashboard-grid { margin-top: 20px; }
     .card-header-row { display: flex; justify-content: space-between; align-items: center; }
@@ -386,6 +407,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <div class="modal-backdrop" id="modal-backdrop-logout" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 10000;" onclick="closeLogoutModal()"></div>
 
 <script>
+
   function toggleUserDropdown(e) {
     e.stopPropagation();
     const menu = document.getElementById('userDropdownMenu');
