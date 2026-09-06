@@ -161,24 +161,25 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         <div class="modal-body-admin" style="padding: 20px;">
             <div class="form-group-admin" style="margin-bottom: 15px;">
                 <label style="font-size: 13px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">Mã số sinh viên (MSSV) <span style="color:#e53e3e;">*</span></label>
-                <input type="text" id="m-mssv" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <input type="text" id="m-mssv" list="student-datalist" required placeholder="Nhập hoặc chọn MSSV..." oninput="onMssvInputChange(this.value)" autocomplete="off" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600;">
+                <datalist id="student-datalist"></datalist>
             </div>
             <div class="form-group-admin" style="margin-bottom: 15px;">
                 <label style="font-size: 13px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">Họ và tên học viên <span style="color:#e53e3e;">*</span></label>
-                <input type="text" id="m-ho-ten" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <input type="text" id="m-ho-ten" required placeholder="Họ tên tự động hiển thị theo MSSV" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; font-weight: 600; color: #1e293b;">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                 <div class="form-group-admin">
                     <label style="font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">CC (10%)</label>
-                    <input type="number" step="0.1" min="0" max="10" id="m-cc" value="10" style="width: 100%; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <input type="number" step="0.1" min="0" max="10" id="m-cc" value="10" style="width: 100%; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600;">
                 </div>
                 <div class="form-group-admin">
                     <label style="font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">GK (30%)</label>
-                    <input type="number" step="0.1" min="0" max="10" id="m-gk" value="8" style="width: 100%; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <input type="number" step="0.1" min="0" max="10" id="m-gk" value="8" style="width: 100%; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600;">
                 </div>
                 <div class="form-group-admin">
                     <label style="font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">CK (60%)</label>
-                    <input type="number" step="0.1" min="0" max="10" id="m-ck" value="8" style="width: 100%; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <input type="number" step="0.1" min="0" max="10" id="m-ck" value="8" style="width: 100%; padding: 8px; text-align: center; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600;">
                 </div>
             </div>
         </div>
@@ -188,6 +189,7 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         </div>
     </form>
 </div>
+
 
 <div class="modal-backdrop" id="modal-backdrop-diem" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 10000;" onclick="closeClassModal(); closeAddModal();"></div>
 
@@ -269,6 +271,33 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         document.getElementById('stat-top-sv').textContent = st.hoc_vien_top;
     }
 
+    let studentMap = {}; // Lưu liên kết MSSV -> Họ tên
+
+    async function loadStudentList() {
+        try {
+            const res = await fetch('../api/giang_vien_diem_action.php?action=get_sinh_vien_list');
+            const data = await res.json();
+            if (data.success && data.students) {
+                const datalist = document.getElementById('student-datalist');
+                studentMap = {};
+                datalist.innerHTML = data.students.map(s => {
+                    studentMap[s.MSSV] = s.HoTen;
+                    return `<option value="${s.MSSV}">${s.HoTen}</option>`;
+                }).join('');
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function onMssvInputChange(val) {
+        val = val.trim();
+        const hoTenInput = document.getElementById('m-ho-ten');
+        if (studentMap[val]) {
+            hoTenInput.value = studentMap[val];
+        }
+    }
+
     function renderTable(data) {
         const tbody = document.getElementById('grade-tbody');
         const info = document.getElementById('pagination-info');
@@ -282,33 +311,25 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         }
 
         let stt = data.start_index;
-        tbody.innerHTML = data.items.map((s, idx) => {
+        tbody.innerHTML = data.items.map((s) => {
             const isFailing = s.TongKet < 5.0;
+            const safeName = (s.HoTen || '').replace(/'/g, "\\'");
             return `
             <tr style="border-bottom: 1px solid #f1f5f9;" data-mssv="${s.MSSV}">
                 <td style="padding: 12px 10px; text-align: center; color: #94a3b8;">${stt++}</td>
                 <td style="padding: 12px; font-weight: 700; color: #1e293b;">${s.MSSV}</td>
                 <td style="padding: 12px; font-weight: 600; color: #334155;">${s.HoTen}</td>
                 
-                <td style="padding: 6px; text-align: center;">
-                    <input type="number" step="0.1" min="0" max="10" value="${parseFloat(s.DiemCC).toFixed(1)}"
-                           onfocus="this.select()" oninput="calcRow(this)"
-                           data-row="${idx}" data-col="0" class="score-input"
-                           style="width: 60px; text-align: center; padding: 4px; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
+                <td style="padding: 12px 10px; text-align: center;">
+                    <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 12px; border-radius: 6px; font-weight: 700; color: #1e293b; display: inline-block; min-width: 45px;">${parseFloat(s.DiemCC).toFixed(1)}</span>
                 </td>
                 
-                <td style="padding: 6px; text-align: center;">
-                    <input type="number" step="0.1" min="0" max="10" value="${parseFloat(s.DiemGK).toFixed(1)}"
-                           onfocus="this.select()" oninput="calcRow(this)"
-                           data-row="${idx}" data-col="1" class="score-input"
-                           style="width: 60px; text-align: center; padding: 4px; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
+                <td style="padding: 12px 10px; text-align: center;">
+                    <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 12px; border-radius: 6px; font-weight: 700; color: #1e293b; display: inline-block; min-width: 45px;">${parseFloat(s.DiemGK).toFixed(1)}</span>
                 </td>
 
-                <td style="padding: 6px; text-align: center;">
-                    <input type="number" step="0.1" min="0" max="10" value="${parseFloat(s.DiemCK).toFixed(1)}"
-                           onfocus="this.select()" oninput="calcRow(this)"
-                           data-row="${idx}" data-col="2" class="score-input"
-                           style="width: 60px; text-align: center; padding: 4px; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;">
+                <td style="padding: 12px 10px; text-align: center;">
+                    <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 12px; border-radius: 6px; font-weight: 700; color: #1e293b; display: inline-block; min-width: 45px;">${parseFloat(s.DiemCK).toFixed(1)}</span>
                 </td>
 
                 <td class="cell-tk" style="padding: 12px 10px; text-align: center; font-weight: 800; color: ${isFailing ? '#dc2626' : '#0f172a'}; font-size: 14px;">
@@ -319,8 +340,9 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
                     ${getBadgeHtml(s.XepLoai)}
                 </td>
 
-                <td style="padding: 12px 10px; text-align: center;">
-                    <button onclick="deleteStudent('${s.MSSV}')" title="Xóa" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;">🗑️</button>
+                <td style="padding: 12px 10px; text-align: center; white-space: nowrap;">
+                    <button onclick="openEditModal('${s.MSSV}', '${safeName}', ${s.DiemCC}, ${s.DiemGK}, ${s.DiemCK})" title="Cập nhật điểm" style="background: none; border: none; color: #0284c7; cursor: pointer; font-size: 15px; margin-right: 8px;">✏️</button>
+                    <button onclick="deleteStudent('${s.MSSV}')" title="Xóa học viên" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px;">🗑️</button>
                 </td>
             </tr>
         `;
@@ -336,6 +358,17 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         btnsHtml += `<button onclick="gotoPage(${Math.min(data.total_pages, currentPage + 1)})" style="padding: 4px 10px; border: 1px solid #cbd5e1; background: white; border-radius: 4px; cursor: pointer; font-size: 12px;">›</button>`;
         btns.innerHTML = btnsHtml;
     }
+
+    function openEditModal(mssv, hoTen, cc, gk, ck) {
+        document.getElementById('modal-student-title').textContent = "Cập nhật điểm học viên";
+        document.getElementById('m-mssv').value = mssv;
+        document.getElementById('m-ho-ten').value = hoTen;
+        document.getElementById('m-cc').value = cc;
+        document.getElementById('m-gk').value = gk;
+        document.getElementById('m-ck').value = ck;
+        openAddModal();
+    }
+
 
     function calcRow(input) {
         const tr = input.closest('tr');
@@ -554,8 +587,10 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
     document.addEventListener('DOMContentLoaded', () => {
         loadClassList();
         loadDiemData();
+        loadStudentList();
     });
 </script>
+
 
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

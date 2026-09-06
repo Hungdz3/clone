@@ -170,6 +170,11 @@ switch ($method) {
                     'start_index' => $offset + 1
                 ], JSON_UNESCAPED_UNICODE);
 
+        if ($action === 'get_sinh_vien_list') {
+            try {
+                $stmt = $db->query("SELECT ma_sv AS \"MSSV\", ho_ten AS \"HoTen\" FROM sinh_vien ORDER BY ma_sv ASC");
+                $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                echo json_encode(['success' => true, 'students' => $students], JSON_UNESCAPED_UNICODE);
             } catch (Exception $e) {
                 echo json_encode(['success' => false, 'message' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
             }
@@ -177,6 +182,7 @@ switch ($method) {
         }
 
         break;
+
 
     case 'POST':
         $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;

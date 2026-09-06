@@ -209,12 +209,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tai_khoan'])) {
         max-width: 520px;
     }
 
-    .cta-row {
-        display: flex;
-        gap: 18px;
-        margin-top: 28px;
-    }
-
     .btn {
         padding: 15px 30px;
         border-radius: 6px;
@@ -382,10 +376,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tai_khoan'])) {
             padding-right: 20px;
         }
 
-        .cta-row {
-            flex-direction: column;
-        }
-
         .tab-switch {
             flex-direction: column;
         }
@@ -412,11 +402,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tai_khoan'])) {
                 Nền tảng giúp sinh viên dễ dàng tra cứu thông tin, đăng ký học phần, xem lịch học và
                 quản lý quá trình học tập một cách hiệu quả.
             </p>
-
-            <div class="cta-row">
-                <a href="index.php" class="btn btn-primary">ĐĂNG KÝ HỌC PHẦN</a>
-                <a href="sinh-vien.php" class="btn btn-outline">HỒ SƠ CÁ NHÂN</a>
-            </div>
 
             <div class="illustration">
                 <img src="assets/illustration.png" alt="Sinh viên học trực tuyến">
