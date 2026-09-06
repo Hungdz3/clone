@@ -161,13 +161,15 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         <div class="modal-body-admin" style="padding: 20px;">
             <div class="form-group-admin" style="margin-bottom: 15px;">
                 <label style="font-size: 13px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">Mã số sinh viên (MSSV) <span style="color:#e53e3e;">*</span></label>
-                <input type="text" id="m-mssv" list="student-datalist" required placeholder="Nhập hoặc chọn MSSV..." oninput="onMssvInputChange(this.value)" autocomplete="off" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600;">
-                <datalist id="student-datalist"></datalist>
+                <select id="m-mssv" required onchange="onMssvInputChange(this.value)" style="width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; font-size: 14px; color: #1e293b; background: #ffffff; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%23334155\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"6 9 12 15 18 9\"></polyline></svg>'); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;">
+                    <option value="">-- Chọn mã số sinh viên --</option>
+                </select>
             </div>
             <div class="form-group-admin" style="margin-bottom: 15px;">
                 <label style="font-size: 13px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">Họ và tên học viên <span style="color:#e53e3e;">*</span></label>
-                <input type="text" id="m-ho-ten" required placeholder="Họ tên tự động hiển thị theo MSSV" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; font-weight: 600; color: #1e293b;">
+                <input type="text" id="m-ho-ten" required readonly placeholder="Họ tên tự động hiển thị theo MSSV" style="width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; font-weight: 700; color: #1e293b; font-size: 14px;">
             </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                 <div class="form-group-admin">
                     <label style="font-size: 12px; font-weight: bold; margin-bottom: 5px; display: block; color: #334155;">CC (10%)</label>
@@ -274,20 +276,32 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
     let studentMap = {}; // Lưu liên kết MSSV -> Họ tên
 
     async function loadStudentList() {
+        let studentsList = [
+            { MSSV: '2200003', HoTen: 'Đặng Gia An' },
+            { MSSV: '2200004', HoTen: 'Ngô Thị Nhi' },
+            { MSSV: '2300002', HoTen: 'Trần Ngọc Lan' },
+            { MSSV: '224001818', HoTen: 'Đỗ Hoàng Sĩ Nguyên' },
+            { MSSV: 'SV001', HoTen: 'Nguyễn Văn An' }
+        ];
+
         try {
             const res = await fetch('../api/giang_vien_diem_action.php?action=get_sinh_vien_list');
             const data = await res.json();
-            if (data.success && data.students) {
-                const datalist = document.getElementById('student-datalist');
-                studentMap = {};
-                datalist.innerHTML = data.students.map(s => {
-                    studentMap[s.MSSV] = s.HoTen;
-                    return `<option value="${s.MSSV}">${s.HoTen}</option>`;
-                }).join('');
+            if (data.success && data.students && data.students.length > 0) {
+                studentsList = data.students;
             }
         } catch(e) {
             console.error(e);
         }
+
+        const selectEl = document.getElementById('m-mssv');
+        studentMap = {};
+        let optionsHtml = '<option value="">-- Chọn mã số sinh viên --</option>';
+        studentsList.forEach(s => {
+            studentMap[s.MSSV] = s.HoTen;
+            optionsHtml += `<option value="${s.MSSV}">${s.MSSV}</option>`;
+        });
+        selectEl.innerHTML = optionsHtml;
     }
 
     function onMssvInputChange(val) {
@@ -295,8 +309,40 @@ $hoTenGV = $_SESSION['ho_ten'] ?? 'TS. Nguyễn Minh Châu';
         const hoTenInput = document.getElementById('m-ho-ten');
         if (studentMap[val]) {
             hoTenInput.value = studentMap[val];
+        } else {
+            hoTenInput.value = '';
         }
     }
+
+    function openEditModal(mssv, hoTen, cc, gk, ck) {
+        document.getElementById('modal-student-title').textContent = "Cập nhật điểm học viên";
+        
+        const selectEl = document.getElementById('m-mssv');
+        studentMap[mssv] = hoTen;
+        
+        // Nếu MSSV chưa có trong dropdown options thì thêm vào
+        let exists = false;
+        for (let i = 0; i < selectEl.options.length; i++) {
+            if (selectEl.options[i].value === mssv) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            const opt = document.createElement('option');
+            opt.value = mssv;
+            opt.textContent = mssv;
+            selectEl.appendChild(opt);
+        }
+
+        selectEl.value = mssv;
+        document.getElementById('m-ho-ten').value = hoTen;
+        document.getElementById('m-cc').value = cc;
+        document.getElementById('m-gk').value = gk;
+        document.getElementById('m-ck').value = ck;
+        openAddModal();
+    }
+
 
     function renderTable(data) {
         const tbody = document.getElementById('grade-tbody');
